@@ -54,6 +54,11 @@ from src.webui_frontend import prepare_webui_frontend_assets
 from src.config import get_config, Config
 from src.logging_config import setup_logging
 
+os.environ['TZ'] = 'Asia/Shanghai'
+time.tzset()
+
+# 这样打印的时间就是北京时间了
+print(f"当前时间: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 logger = logging.getLogger(__name__)
 _RUNTIME_ENV_FILE_KEYS = set()
