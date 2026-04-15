@@ -3,7 +3,10 @@ name: 每日股票分析
 on:
   # 定时触发 - 每天北京时间 18:00 (UTC 10:00)
   schedule:
-    - cron: '0 10 * * 1-5'     # 周一到周五，UTC 10:00 = 北京时间 18:00
+    # 早上8:00（北京时间）= UTC 00:00
+    - cron: '0 0 * * 1-5'
+    # 下午15:30（北京时间）= UTC 07:30  
+    - cron: '30 7 * * 1-5'
   
   # 手动触发
   workflow_dispatch:
@@ -40,7 +43,15 @@ jobs:
       
       - name: 检出代码
         uses: actions/checkout@v5
-      
+
+      - name: 读取股票列表
+        id: read_stocks
+        run: |
+          # 从stocks.json读取股票代码
+          STOCK_LIST=$(cat stocks.json | jq -r '.stocks | join(",")')
+          echo "stock_list=$STOCK_LIST" >> $GITHUB_OUTPUT
+          echo "读取到股票: $STOCK_LIST"
+          
       - name: 设置 Python 环境
         uses: actions/setup-python@v6
         with:
@@ -174,7 +185,9 @@ jobs:
           # ==========================================
           # 自选股配置
           # ==========================================
-          STOCK_LIST: ${{ vars.STOCK_LIST || secrets.STOCK_LIST || '600519' }}
+          # STOCK_LIST: ${{ vars.STOCK_LIST || secrets.STOCK_LIST || '600519' }}
+            # 使用文件读取的股票列表，覆盖Secrets的STOCK_LIST
+          STOCK_LIST: ${{ steps.read_stocks.outputs.stock_list }}
           MARKET_REVIEW_REGION: ${{ vars.MARKET_REVIEW_REGION || secrets.MARKET_REVIEW_REGION || 'cn' }}
           
           # ==========================================
@@ -216,7 +229,8 @@ jobs:
           echo "=========================================="
           echo "🚀 A股自选股智能分析系统"
           echo "=========================================="
-          echo "⏰ 时间: $(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
+          # echo "⏰ 时间: $(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
+          echo "⏰ 时间: $(date '+%Y-%m-%d %H:%M:%S')"
           echo "🎯 运行模式: $MODE"
           echo "📊 自选股: $STOCK_LIST"
           echo "📝 报告类型: $REPORT_TYPE"
@@ -272,6 +286,11 @@ jobs:
             FORCE_RUN_ARG="--force-run"
             echo "⚡ 已启用强制运行模式（跳过交易日检查）"
           fi
+          
+           # 设置北京时区
+          export TZ=Asia/Shanghai
+          echo "当前时间: $(date)"
+          echo "分析股票: $STOCK_LIST"
 
           # 执行分析
           if [ "$MODE" = "market-only" ]; then
