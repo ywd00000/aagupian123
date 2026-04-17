@@ -3,8 +3,6 @@ name: 每日股票分析
 on:
   schedule:
     - cron: '0 10 * * 1-5'     # 周一到周五，UTC 10:00 = 北京时间 18:00
-
-push:
     paths:
       - 'stocks.json'    # ✅ 加这3行
   
