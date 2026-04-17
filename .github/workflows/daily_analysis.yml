@@ -3,11 +3,9 @@ name: 每日股票分析
 on:
   schedule:
     - cron: '0 10 * * 1-5'     # 周一到周五，UTC 10:00 = 北京时间 18:00
+  push:
     paths:
-      - 'stocks.json'    # ✅ 加这3行
-  
-
-  # 手动触发
+      - 'stocks.json'          # 当 stocks.json 变更时触发
   workflow_dispatch:
     inputs:
       mode:
@@ -16,9 +14,9 @@ on:
         default: 'full'
         type: choice
         options:
-          - full          # 完整分析（股票+大盘）
-          - market-only   # 仅大盘复盘
-          - stocks-only   # 仅股票分析
+          - full
+          - market-only
+          - stocks-only
       force_run:
         description: '强制运行（跳过交易日检查）'
         required: false
